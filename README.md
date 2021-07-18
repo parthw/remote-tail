@@ -66,10 +66,10 @@ make help
 
 ### Deployment Files
 
-Dockerfile.build - To execute the pylint, unittests or ther security tools on Tail Agent
-Dockerfile - To build the tail-agent image
-kuberentes-deployment.yaml - Manifest to deploy the image to kuberentes
-Jenkinsfile - To perform the CI/CD
+1. Dockerfile.build - To execute the pylint, unittests or security tools on Tail Agent
+2. Dockerfile - To build the tail-agent image
+3. kuberentes-deployment.yaml - Manifest to deploy the image to kuberentes
+4. Jenkinsfile - To perform the CI/CD
 
 ### Deployment
 
