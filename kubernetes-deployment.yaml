@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remote-tail-agent
+  namespace: remote-tail
+  labels:
+    k8s-app: remote-tail
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: remote-tail
+  template:
+    metadata:
+      labels:
+        k8s-app: remote-tail
+    spec:
+      containers:
+        - name: remote-tail
+          image: XXXXX.dkr.ecr.ap-south-1.amazonaws.com/remote-tail-agent:{{image_id}}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-tail-agent
+  namespace: remote-tail
+  labels:
+    k8s-svc: remote-tail
+spec:
+  ports:
+    - port: 80
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    k8s-app: remote-tail
+  type: ClusterIP

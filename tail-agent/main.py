@@ -1,8 +1,12 @@
+"""
+Tail Agent
+Main file with controllers
+"""
 import multiprocessing
 
-from flask import Flask, json, jsonify, request
+from flask import Flask, jsonify, request
 
-from tail_pusher import tail
+from tailer import tail
 
 app = Flask(__name__)
 
@@ -15,17 +19,17 @@ def start_tailing():
 
     Controller to start the tailing file process
     """
-    global tail_process
+    global TAIL_PROCESS
     content = request.get_json(silent=True)
     filepath = content["filepath"]
     try:
-        if tail_process:
-            if tail_process.is_alive:
+        if TAIL_PROCESS:
+            if TAIL_PROCESS.is_alive:
                 return jsonify(message=f"Currently tailing file {filepath}")
     except NameError:
         pass
-    tail_process = multiprocessing.Process(target=tail, args=(filepath, ))
-    tail_process.start()
+    TAIL_PROCESS = multiprocessing.Process(target=tail, args=(filepath, ))
+    TAIL_PROCESS.start()
     return jsonify(message=f"Started tailing file {filepath}")
 
 
@@ -36,11 +40,25 @@ def stop_tailing():
 
     Controller to stop the tailing file process
     """
-    if tail_process.is_alive():
-        tail_process.terminate()
+    if TAIL_PROCESS.is_alive():
+        TAIL_PROCESS.terminate()
         return jsonify(message="Stopped tailing file")
     return jsonify(message="Not tailing any file")
 
 
+@app.route('/status')
+def application_status():
+    """
+    Method: GET
+
+    Controller to get the status of application 
+    """
+    return jsonify(message="running")
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        threaded=True
+    )

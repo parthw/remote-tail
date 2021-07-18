@@ -1,17 +1,22 @@
+"""
+Tailer.py file to read the content of file and
+push them to kafka server
+"""
+
 import logging
 import os
 
-import pusher
+import yaml
+from kafka import KafkaProducer
 
-# Configuring pusher client to send files content
-pusher_client = pusher.Pusher(
-    app_id='1236771',
-    key='4658bc9d345bd31db4a8',
-    secret='c0d0cbeafdc885eee4e9',
-    cluster='ap2',
-    ssl=True
-)
+# Reading configuration file
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config = yaml.safe_load(open(os.path.join(dir_path, "config/config.yml")))
 
+# Connecting to Kafka
+producer = KafkaProducer(bootstrap_servers=config["kafka-servers"])
+
+# Setting up logging
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -30,7 +35,7 @@ def tail(filepath):
 
         while True:
             content = file_object.readline()
-            if not send_to_pusher_server(content):
+            if not send_to_server(content):
                 break
             file_pointer = file_object.tell()
 
@@ -47,18 +52,17 @@ def tail(filepath):
         return f"File {filepath} does not exist"
 
 
-def send_to_pusher_server(content):
+def send_to_server(content):
     """
     content: tail content
     Logic to push the tail content to pusher server
     """
     try:
         if content:
-            print(content)
-            # pusher_client.trigger(
-            #    'my-channel', 'my-event', {'message': content})
+            producer.send(config["kafka-topic"], value=bytes(content, 'utf-8'))
+            # producer.flush()
     except Exception as expn:
         logging.error(
-            "Exception occured while sending content to pusher server - %s", content)
+            "Exception occured while sending content to server - %s", expn)
         return False
     return True
