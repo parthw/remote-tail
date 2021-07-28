@@ -40,8 +40,8 @@ start-cli:
 ### install-agent: To install the agent dependencies
 .PHONY: install-agent
 install-agent:
-	python3 -m pip install tail-agent/requirements.txt
+	python3 -m pip install -r tail-agent/requirements.txt
 
 ### install-cli: To install cli dependencies
 install-cli:
-	python3 -m pip install tail-cli/requirements.txt
+	python3 -m pip install -r tail-cli/requirements.txt
